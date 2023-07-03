@@ -2,9 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-//using NUnit.Framework.Internal;
 using UnityEngine.UIElements;
-//using static UnityEngine.Rendering.DebugUI;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -14,74 +12,25 @@ using System.IO;
 class ShaderGlobals : ScriptableObject
 {
     [Serializable]
-    public struct ShaderGlobalFloat
+    public class ShaderGlobal<T>
     {
         public string referenceName;
-        public float value;
+        public T value;
     }
 
-    [Serializable]
-    public struct ShaderGlobalFloatArray
-    {
-        public string referenceName;
-        public List<float> value;
-    }
+    // TODO : move to Project Settings Folder
+    public const string k_ShaderGlobalsSettingsPath = "Assets/Resources/ShaderGlobals.asset";
+    //public const string k_ShaderGlobalsSettingsPath = "ProjectSettings/ShaderGlobals.asset";
 
-    [Serializable]
-    public struct ShaderGlobalInteger
-    {
-        public string referenceName;
-        public int value;
-    }
-
-    [Serializable]
-    public struct ShaderGlobalColor
-    {
-        public string referenceName;
-        public Color value;
-    }
-
-    [Serializable]
-    public struct ShaderGlobalVector
-    {
-        public string referenceName;
-        public Vector4 value;
-    }
-
-    [Serializable]
-    public struct ShaderGlobalVectorArray
-    {
-        public string referenceName;
-        public List<Vector4> value;
-    }
-
-    [Serializable]
-    public struct ShaderGlobalMatrix
-    {
-        public string referenceName;
-        public Matrix4x4 value;
-    }
-
-    [Serializable]
-    public struct ShaderGlobalMatrixArray
-    {
-        public string referenceName;
-        public List<Matrix4x4> value;
-    }
-
-    [Serializable]
-    public struct ShaderGlobalTexture
-    {
-        public string referenceName;
-        public Texture value;
-    }
-
-    [Serializable]
-    public struct ShaderGlobalBuffer
-    {
-        public string referenceName;
-        public ComputeBuffer value;
-    }
+    public List<ShaderGlobal<float>> globalFloats = new List<ShaderGlobal<float>>();
+    public List<ShaderGlobal<int>> globalIntegers = new List<ShaderGlobal<int>>();
+    public List<ShaderGlobal<Color>> globalColors = new List<ShaderGlobal<Color>>();
+    public List<ShaderGlobal<Vector4>> globalVectors = new List<ShaderGlobal<Vector4>>();
+    public List<ShaderGlobal<Matrix4x4>> globalMatrices = new List<ShaderGlobal<Matrix4x4>>();
+    public List<ShaderGlobal<Texture2D>> globalTextures = new List<ShaderGlobal<Texture2D>>();
+    public List<ShaderGlobal<List<float>>> globalFloatArrays = new List<ShaderGlobal<List<float>>>();
+    public List<ShaderGlobal<List<Vector4>>> globalVectorArrays = new List<ShaderGlobal<List<Vector4>>>();
+    public List<ShaderGlobal<List<Matrix4x4>>> globalMatrixArrays = new List<ShaderGlobal<List<Matrix4x4>>>();
 
 #if UNITY_EDITOR
     [InitializeOnLoadMethod, InitializeOnEnterPlayMode]
@@ -89,27 +38,52 @@ class ShaderGlobals : ScriptableObject
     [RuntimeInitializeOnLoadMethod]
     static void SetGlobals()
     {
-        //var settings = GetSerializedSettings().targetObject as ShaderGlobals;
         var settings = Resources.Load<ShaderGlobals>("ShaderGlobals");
         if (settings is null)
             return;
 
+        // floats
         foreach (var floatGlobal in settings.globalFloats)
             Shader.SetGlobalFloat(floatGlobal.referenceName, floatGlobal.value);
+
+        // float arrays
+        foreach (var floatArrayGlobal in settings.globalFloatArrays)
+            Shader.SetGlobalFloatArray(floatArrayGlobal.referenceName, floatArrayGlobal.value);
+
+        // colors
+        foreach (var colorGlobal in settings.globalColors)
+            Shader.SetGlobalColor(colorGlobal.referenceName, colorGlobal.value);
+
+        // integers
+        foreach (var intGlobal in settings.globalIntegers)
+            Shader.SetGlobalInteger(intGlobal.referenceName, intGlobal.value);
+
+        // matrices
+        foreach (var matrixGlobal in settings.globalMatrices)
+            Shader.SetGlobalMatrix(matrixGlobal.referenceName, matrixGlobal.value);
+
+        // matrix arrays
+        foreach (var matrixArrayGlobal in settings.globalMatrixArrays)
+            Shader.SetGlobalMatrixArray(matrixArrayGlobal.referenceName, matrixArrayGlobal.value);
+
+        // textures
+        foreach (var textureGlobal in settings.globalTextures)
+            Shader.SetGlobalTexture(textureGlobal.referenceName, textureGlobal.value);
+
+        // vectors
+        foreach (var vectorGlobal in settings.globalVectors)
+            Shader.SetGlobalVector(vectorGlobal.referenceName, vectorGlobal.value);
+
+        // vector arrays
+        foreach (var vectorArrayGlobal in settings.globalVectorArrays)
+            Shader.SetGlobalVectorArray(vectorArrayGlobal.referenceName, vectorArrayGlobal.value);
     }
-
-    // TODO : move to Project Settings Folder
-    public const string k_ShaderGlobalsSettingsPath = "Assets/Resources/ShaderGlobals.asset";
-    //public const string k_ShaderGlobalsSettingsPath = "ProjectSettings/ShaderGlobals.asset";
-
-    public List<ShaderGlobalFloat> globalFloats = new List<ShaderGlobalFloat>();
-    public List<ShaderGlobalFloatArray> globalFloatArrays = new List<ShaderGlobalFloatArray>();
-    public List<ShaderGlobalInteger> globalIntegers = new List<ShaderGlobalInteger>();
 
     private void OnValidate()
     {
         SetGlobals();
     }
+
 #if UNITY_EDITOR
     internal static ShaderGlobals GetOrCreateSettings()
     {
@@ -131,31 +105,8 @@ class ShaderGlobals : ScriptableObject
         return new SerializedObject(GetOrCreateSettings());
     }
 
-    //[SettingsProvider]
-    //public static SettingsProvider ShaderGlobalsSettingsProvider()
-    //{
-    //    // First parameter is the path in the Settings window.
-    //    // Second parameter is the scope of this setting: it only appears in the Project Settings window.
-    //    var provider = new SettingsProvider("Project/Shader Globals", SettingsScope.Project)
-    //    {
-    //        // By default the last token of the path is used as display name if no label is provided.
-    //        //label = "Floats",
-    //        // Create the SettingsProvider and initialize its drawing (IMGUI) function in place:
-    //        guiHandler = (searchContext) =>
-    //        {
-    //            var settings = GetSerializedSettings();
-    //            EditorGUILayout.PropertyField(settings.FindProperty("globalFloats"), new GUIContent("Floats"));
-    //        },
-
-    //        // Populate the search keywords to enable smart search filtering and label highlighting:
-    //        keywords = new HashSet<string>(new[] { "Shader", "Global" })
-    //    };
-
-    //    return provider;
-    //}
-
     [SettingsProvider]
-    public static SettingsProvider CreateMyCustomSettingsProvider()
+    public static SettingsProvider ShaderGlobalsSettingsProvider()
     {
         // First parameter is the path in the Settings window.
         // Second parameter is the scope of this setting: it only appears in the Settings window for the Project scope.
@@ -191,16 +142,15 @@ class ShaderGlobals : ScriptableObject
 
                 rootElement.Add(settings);
 
-                var gFloatField = new ListView();
-                gFloatField.showFoldoutHeader = true;
-                gFloatField.headerTitle = "Global Floats";
-                gFloatField.virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight;
-                gFloatField.reorderable = true;
-                gFloatField.reorderMode = ListViewReorderMode.Animated;
-                gFloatField.bindingPath = "globalFloats";
-                gFloatField.showAddRemoveFooter = true;
-                gFloatField.AddToClassList("property-value");
-                settings.Add(gFloatField);
+                settings.Add(MakeListView("globalFloats", "Global Floats"));
+                settings.Add(MakeListView("globalIntegers", "Global Integers"));
+                settings.Add(MakeListView("globalColors", "Global Colors"));
+                settings.Add(MakeListView("globalVectors", "Global Vectors"));
+                settings.Add(MakeListView("globalMatrices", "Global Matrices"));
+                settings.Add(MakeListView("globalTextures", "Global Textures"));
+                settings.Add(MakeListView("globalFloatArrays", "Global Float Arrays"));
+                settings.Add(MakeListView("globalVectorArrays", "Global Vector Arrays"));
+                settings.Add(MakeListView("globalMatrixArrays", "Global Matrix Arrays"));
             },
 
             // Populate the search keywords to enable smart search filtering and label highlighting:
@@ -208,6 +158,20 @@ class ShaderGlobals : ScriptableObject
         };
 
         return provider;
+
+        VisualElement MakeListView(string propertyPath, string headerTitle)
+        {
+            var gPropField = new ListView();
+            gPropField.showFoldoutHeader = true;
+            gPropField.headerTitle = headerTitle;
+            gPropField.virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight;
+            gPropField.reorderable = true;
+            gPropField.reorderMode = ListViewReorderMode.Animated;
+            gPropField.bindingPath = propertyPath;
+            gPropField.showAddRemoveFooter = true;
+            gPropField.AddToClassList("property-value");
+            return gPropField;
+        }
     }
 #endif
 }
