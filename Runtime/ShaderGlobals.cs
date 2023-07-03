@@ -9,7 +9,7 @@ using UnityEditor.UIElements;
 using System.IO;
 #endif
 
-class ShaderGlobals : ScriptableObject
+public sealed class ShaderGlobals : ScriptableObject
 {
     [Serializable]
     public class ShaderGlobal<T>
@@ -106,22 +106,15 @@ class ShaderGlobals : ScriptableObject
     }
 
     [SettingsProvider]
-    public static SettingsProvider ShaderGlobalsSettingsProvider()
+    static SettingsProvider ShaderGlobalsSettingsProvider()
     {
-        // First parameter is the path in the Settings window.
-        // Second parameter is the scope of this setting: it only appears in the Settings window for the Project scope.
-        var provider = new SettingsProvider("Project/Shader Globals", SettingsScope.Project)
+        var provider = new SettingsProvider("Project/Graphics/Shader Globals", SettingsScope.Project)
         {
             label = "Shader Globals",
-            // activateHandler is called when the user clicks on the Settings item in the Settings window.
             activateHandler = (searchContext, rootElement) =>
             {
                 var serializedObject = GetSerializedSettings();
 
-                // rootElement is a VisualElement. If you add any children to it, the OnGUI function
-                // isn't called because the SettingsProvider uses the UIElements drawing framework.
-                //var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/Editor/settings_ui.uss");
-                //rootElement.styleSheets.Add(styleSheet);
                 var title = new Label()
                 {
                     text = "Shader Globals"
@@ -153,12 +146,12 @@ class ShaderGlobals : ScriptableObject
                 settings.Add(MakeListView("globalMatrixArrays", "Global Matrix Arrays"));
             },
 
-            // Populate the search keywords to enable smart search filtering and label highlighting:
             keywords = new HashSet<string>(new[] { "Shader", "Global" })
         };
 
         return provider;
 
+        // TODO : improve arrays display
         VisualElement MakeListView(string propertyPath, string headerTitle)
         {
             var gPropField = new ListView();
