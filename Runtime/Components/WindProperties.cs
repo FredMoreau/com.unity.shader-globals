@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Unity.ShaderGlobals.Components
 {
@@ -8,11 +9,11 @@ namespace Unity.ShaderGlobals.Components
     [ExecuteAlways, ExecuteInEditMode]
     public class WindProperties : MonoBehaviour
     {
-        string _windDirectionVectorReferenceName = "_WindDirection";
-        string _windPositionVectorReferenceName = "_WindPosition";
+        string _windVectorReferenceName = "_WindPosition";
         string _windFloatValuesReferenceName = "_WindValues";
 
-        float[] windValues = new float[5];
+        GlobalKeyword wind_dir_kw, wind_spherical_kw;
+        Vector4 windVector, windValues;
 
         WindZone _windZone;
         WindZone WindZone
@@ -25,25 +26,45 @@ namespace Unity.ShaderGlobals.Components
             }
         }
 
+        private void Start()
+        {
+            wind_dir_kw = new GlobalKeyword("_WIND_DIRECTIONAL");
+            wind_spherical_kw = new GlobalKeyword("_WIND_SPHERICAL");
+
+            switch (WindZone.mode)
+            {
+                case WindZoneMode.Directional:
+                    Shader.SetKeyword(wind_dir_kw, true);
+                    Shader.SetKeyword(wind_spherical_kw, false);
+                    break;
+                case WindZoneMode.Spherical:
+                    Shader.SetKeyword(wind_dir_kw, false);
+                    Shader.SetKeyword(wind_spherical_kw, true);
+                    break;
+            }
+        }
+
         private void Update()
         {
             switch (WindZone.mode)
             {
                 case WindZoneMode.Directional:
-                    Shader.SetGlobalVector(_windDirectionVectorReferenceName, transform.forward);
+                    windVector = transform.forward;
                     break;
                 case WindZoneMode.Spherical:
-                    Shader.SetGlobalVector(_windPositionVectorReferenceName, transform.position);
+                    windVector = transform.position;
                     break;
             }
 
-            windValues[0] = WindZone.radius;
-            windValues[1] = WindZone.windMain;
-            windValues[2] = WindZone.windTurbulence;
-            windValues[3] = WindZone.windPulseMagnitude;
-            windValues[4] = WindZone.windPulseFrequency;
+            windVector.w = WindZone.radius;
+            windValues.Set(WindZone.windMain,
+                WindZone.windTurbulence,
+                WindZone.windPulseMagnitude,
+                WindZone.windPulseFrequency
+                );
 
-            Shader.SetGlobalFloatArray(_windFloatValuesReferenceName, windValues);
+            Shader.SetGlobalVector(_windVectorReferenceName, transform.forward);
+            Shader.SetGlobalVector(_windFloatValuesReferenceName, windValues);
         }
     }
 }
