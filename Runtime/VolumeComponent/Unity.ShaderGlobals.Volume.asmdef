@@ -1,0 +1,31 @@
+{
+    "name": "Unity.ShaderGlobals.Volume",
+    "rootNamespace": "",
+    "references": [
+        "GUID:0a3510b8f22c54717933862ea706f4e4",
+        "GUID:df380645f10b7bc4b97d4f5eb6303d95",
+        "GUID:15fc0a57446b3144c949da3e2b9737a9"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "VOLUME_ENABLED"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.render-pipelines.core",
+            "expression": "",
+            "define": "VOLUME_ENABLED"
+        },
+        {
+            "name": "com.unity.render-pipelines.universal",
+            "expression": "",
+            "define": "URP_ENABLED"
+        }
+    ],
+    "noEngineReferences": false
+}

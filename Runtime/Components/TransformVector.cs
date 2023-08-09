@@ -71,5 +71,31 @@ namespace Unity.ShaderGlobals.Components
                     break;
             }
         }
+
+        private void OnDrawGizmos()
+        {
+            Gizmos.matrix = transform.localToWorldMatrix;
+            Gizmos.color = Color.cyan;
+            switch (source)
+            {
+                case Source.Position:
+                    break;
+                case Source.Direction:
+                    Gizmos.DrawRay(Vector3.zero, Vector3.forward);
+                    break;
+                case Source.Scale:
+                    Gizmos.DrawWireCube(Vector3.zero, transform.localScale);
+                    break;
+            }
+        }
+
+        [ContextMenu("Reset PropertyBlocks on Targets")]
+        void ResetTargets()
+        {
+            foreach (var renderer in targets)
+            {
+                renderer.SetPropertyBlock(null);
+            }
+        }
     }
 }
