@@ -3,24 +3,24 @@ using System.ComponentModel;
 #endif
 using System;
 using UnityEngine;
-using UnityEngine.Playables;
 using UnityEngine.Timeline;
+using UnityEngine.Playables;
 
 namespace Unity.ShaderGlobals.Timeline
 {
 #if UNITY_EDITOR
-    [DisplayName("Shader Globals/Float Track")]
+    [DisplayName("Shader Globals/Boolean Track")]
 #endif
     [Serializable]
-    [TrackClipType(typeof(GlobalFloatControlAsset))]
+    [TrackClipType(typeof(GlobalBooleanControlAsset))]
     [TrackBindingType(null)]
     [ExcludeFromPreset]
-    public class GlobalFloatControlTrack : TrackAsset
+    public class GlobalBooleanControlTrack : TrackAsset
     {
-        [SerializeField] string _referenceName = "_customFloat";
-        [SerializeField] bool _restoreOriginalValue = false;
+        [SerializeField] string _referenceName = "_customBoolean";
 
-        GlobalFloatControlMixerBehaviour m_ActivationMixer;
+        [SerializeField]
+        PostPlaybackState m_PostPlaybackState = PostPlaybackState.LeaveAsIs;
 
         public string referenceName
         {
@@ -28,15 +28,20 @@ namespace Unity.ShaderGlobals.Timeline
             set { _referenceName = value; UpdateTrackReference(); }
         }
 
-        public bool restoreOriginalValue
+        GlobalBooleanControlBehaviour m_ActivationMixer;
+
+        public enum PostPlaybackState { Active, Inactive, Revert, LeaveAsIs }
+
+        public PostPlaybackState postPlaybackState
         {
-            get { return _restoreOriginalValue; }
-            set { _restoreOriginalValue = value; UpdateTrackMode(); }
+            get { return m_PostPlaybackState; }
+            set { m_PostPlaybackState = value; UpdateTrackMode(); }
         }
 
+        /// <inheritdoc/>
         public override Playable CreateTrackMixer(PlayableGraph graph, GameObject go, int inputCount)
         {
-            var mixer = ScriptPlayable<GlobalFloatControlMixerBehaviour>.Create(graph, inputCount);
+            var mixer = GlobalBooleanControlBehaviour.Create(graph, inputCount);
             m_ActivationMixer = mixer.GetBehaviour();
 
             UpdateTrackMode();
@@ -48,7 +53,14 @@ namespace Unity.ShaderGlobals.Timeline
         internal void UpdateTrackMode()
         {
             if (m_ActivationMixer != null)
-                m_ActivationMixer.restoreOriginalValue = _restoreOriginalValue;
+                m_ActivationMixer.postPlaybackState = m_PostPlaybackState;
+        }
+
+        /// <inheritdoc/>
+        protected override void OnCreateClip(TimelineClip clip)
+        {
+            clip.displayName = "On";
+            base.OnCreateClip(clip);
         }
 
         internal void UpdateTrackReference()

@@ -1,8 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
-using UnityEngine.Timeline;
 
 namespace Unity.ShaderGlobals.Timeline
 {
@@ -10,6 +7,13 @@ namespace Unity.ShaderGlobals.Timeline
     {
         public string referenceName { get; set; }
         public Color originalColor { get; set; }
+
+        bool _restoreOriginalValue = false;
+        public bool restoreOriginalValue
+        {
+            get { return _restoreOriginalValue; }
+            set { _restoreOriginalValue = value; }
+        }
 
         public override void ProcessFrame(Playable playable, FrameData info, object playerData)
         {
@@ -33,7 +37,9 @@ namespace Unity.ShaderGlobals.Timeline
         public override void OnPlayableDestroy(Playable playable)
         {
             base.OnPlayableDestroy(playable);
-            Shader.SetGlobalColor(referenceName, originalColor);
+
+            if (_restoreOriginalValue)
+                Shader.SetGlobalColor(referenceName, originalColor);
         }
     }
 }

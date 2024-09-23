@@ -1,12 +1,15 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+#if UNITY_EDITOR
+using System.ComponentModel;
+#endif
 using UnityEngine;
 using UnityEngine.Playables;
-using UnityEngine.Timeline;
 
 namespace Unity.ShaderGlobals.Timeline
 {
-    public class GlobalColorControlAsset : PlayableAsset, IPropertyPreview
+#if UNITY_EDITOR
+    [DisplayName("Color Clip")]
+#endif
+    public class GlobalColorControlAsset : PlayableAsset
     {
         public GlobalColorControlBehaviour template;
 
@@ -14,11 +17,6 @@ namespace Unity.ShaderGlobals.Timeline
         {
             var playable = ScriptPlayable<GlobalColorControlBehaviour>.Create(graph, template);
             return playable;
-        }
-
-        public void GatherProperties(PlayableDirector director, IPropertyCollector driver)
-        {
-
         }
     }
 }

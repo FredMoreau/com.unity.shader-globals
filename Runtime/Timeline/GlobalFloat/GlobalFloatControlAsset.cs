@@ -1,12 +1,15 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+#if UNITY_EDITOR
+using System.ComponentModel;
+#endif
 using UnityEngine;
 using UnityEngine.Playables;
-using UnityEngine.Timeline;
 
 namespace Unity.ShaderGlobals.Timeline
 {
-    public class GlobalFloatControlAsset : PlayableAsset, IPropertyPreview
+#if UNITY_EDITOR
+    [DisplayName("Float Clip")]
+#endif
+    public class GlobalFloatControlAsset : PlayableAsset
     {
         public GlobalFloatControlBehaviour template;
 
@@ -14,11 +17,6 @@ namespace Unity.ShaderGlobals.Timeline
         {
             var playable = ScriptPlayable<GlobalFloatControlBehaviour>.Create(graph, template);
             return playable;
-        }
-
-        public void GatherProperties(PlayableDirector director, IPropertyCollector driver)
-        {
-
         }
     }
 }
